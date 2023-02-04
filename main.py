@@ -2,11 +2,18 @@ BACKGROUND_COLOR = "#B1DDC6"
 from tkinter import *
 import pandas as pd
 import random
-import time
 
-df = pd.read_csv("./data/french_words.csv")
-df = df.to_dict(orient="records")
 current_card = {}
+try:
+    df = pd.read_csv("./data/words_to_learn.csv")
+except FileNotFoundError:
+    df = pd.read_csv("./data/french_words.csv")
+    df = df.to_dict(orient="records")
+else:
+    df = df.to_dict(orient="records")
+finally:
+    df2 = df.copy()
+
 
 
 def flip_card():
@@ -15,14 +22,27 @@ def flip_card():
     canvas.itemconfig(card_word, fill="white", text=current_card["English"])
 
 
+def is_known():
+    next_card()
+    x = current_card["French"]
+    for i in df2:
+        if i["French"] == x:
+            df2.remove(i)
+    print(len(df2))
+    new_data_frame = pd.DataFrame(df2)
+    new_data_frame.to_csv("./data/words_to_learn.csv", index=0)
+
+
 def next_card():
     global current_card, timer
     window.after_cancel(timer)
     current_card = random.choice(df)
+    x = current_card["French"]
     canvas.itemconfig(card_title, text="French", fill="black")
-    canvas.itemconfig(card_word, text=current_card["French"], fill="black")
+    canvas.itemconfig(card_word, text=x, fill="black")
     canvas.itemconfig(im, image=logo_image)
     timer = window.after(3000, func=flip_card)
+
 
 window = Tk()
 window.title("Flashy")
@@ -44,17 +64,9 @@ my_image_x = PhotoImage(file="./images/wrong.png")
 button_x = Button(image=my_image_x, highlightthickness=0, command=next_card)
 button_x.grid(row=1, column=0)
 my_image_y = PhotoImage(file="./images/right.png")
-button_y = Button(image=my_image_y, highlightthickness=0, command=next_card)
+button_y = Button(image=my_image_y, highlightthickness=0, command=is_known)
 button_y.grid(row=1, column=1)
 
 next_card()
-
-
-
-
-
-
-
-
 
 window.mainloop()
