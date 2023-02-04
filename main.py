@@ -2,29 +2,38 @@ BACKGROUND_COLOR = "#B1DDC6"
 from tkinter import *
 import pandas as pd
 import random
-
+import time
 
 df = pd.read_csv("./data/french_words.csv")
 df = df.to_dict(orient="records")
+current_card = {}
+
+
+def flip_card():
+    canvas.itemconfig(im, image=logo_image2)
+    canvas.itemconfig(card_title, fill="white", text="English")
+    canvas.itemconfig(card_word, fill="white", text=current_card["English"])
 
 
 def next_card():
-    x = random.choice(df)
-    random_french_word = x["French"]
-    canvas.itemconfig(card_title, text="French")
-    canvas.itemconfig(card_word, text=random_french_word)
-
-
-
-
+    global current_card, timer
+    window.after_cancel(timer)
+    current_card = random.choice(df)
+    canvas.itemconfig(card_title, text="French", fill="black")
+    canvas.itemconfig(card_word, text=current_card["French"], fill="black")
+    canvas.itemconfig(im, image=logo_image)
+    timer = window.after(3000, func=flip_card)
 
 window = Tk()
 window.title("Flashy")
 canvas = Canvas(height=526, width=800)
 logo_image = PhotoImage(file="./images/card_front.png")
-canvas.create_image(400, 263, image=logo_image)
+logo_image2 = PhotoImage(file="./images/card_back.png")
+im = canvas.create_image(400, 263, image=logo_image)
 card_title = canvas.create_text(400, 150, text="", font=("Arial", 40, "italic"))
 card_word = canvas.create_text(400, 263, text="", font=("Arial", 60, "bold"))
+
+timer = window.after(3000, func=flip_card)
 
 canvas.config(bg=BACKGROUND_COLOR)
 window.config(padx=50, pady=50, bg=BACKGROUND_COLOR, highlightthickness=0)
